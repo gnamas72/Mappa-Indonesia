@@ -3,46 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mappa Indonesia - Audio Guida CSV</title>
-    
+    <title>Mappa Indonesia - Audio Guida</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; }
-        #map { height: 100vh; width: 100%; background: #f8f9fa; }
-        
-        /* Bottone Stop Audio */
-        #stop-global {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            background-color: #e74c3c; color: white; border: none;
-            padding: 12px 20px; border-radius: 30px; font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer;
-        }
-
-        /* Bottone GPS */
-        .gps-button {
-            background-color: white; width: 44px; height: 44px; line-height: 44px;
-            text-align: center; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            cursor: pointer; font-size: 20px; display: block; margin-bottom: 10px;
-            text-decoration: none; color: black;
-        }
-
-        .etichetta-nome {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #2c3e50; border-radius: 4px;
-            color: #2c3e50; font-weight: bold; font-size: 13px;
-            padding: 2px 5px;
-        }
-
-        .popup-container { min-width: 220px; }
-        .btn-audio {
-            background-color: #2ecc71; color: white; border: none;
-            padding: 10px; border-radius: 5px; width: 75%; cursor: pointer; font-weight: bold;
-        }
-        .btn-stop-small {
-            background-color: #95a5a6; color: white; border: none;
-            padding: 10px; border-radius: 5px; width: 20%; cursor: pointer;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        #stop-global { position: fixed; top: 20px; right: 20px; z-index: 1000; background: #e74c3c; color: white; border: none; padding: 12px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .etichetta-nome { background: white; border: 1px solid #333; font-weight: bold; padding: 2px 5px; }
+        .gps-button { background-color: white; width: 44px; height: 44px; line-height: 44px; text-align: center; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4); cursor: pointer; font-size: 20px; display: block; }
     </style>
 </head>
 <body>
@@ -54,7 +22,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <script>
-        // 1. Configurazione Iniziale Mappa
         const map = L.map('map', { zoomControl: false }).setView([-2.5, 118], 5);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -63,20 +30,52 @@
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // 2. Funzioni Audio
         function parla(testo) {
             window.speechSynthesis.cancel();
             const messaggio = new SpeechSynthesisUtterance(testo);
             messaggio.lang = 'it-IT';
-            messaggio.rate = 0.9;
             window.speechSynthesis.speak(messaggio);
         }
 
-        function stopAudio() {
-            window.speechSynthesis.cancel();
-        }
+        function stopAudio() { window.speechSynthesis.cancel(); }
 
-        // 3. Logica GPS
+        // Caricamento CSV con delimitatore automatico o forzato a ";"
+        Papa.parse('punti.csv', {
+            download: true,
+            header: true,
+            delimiter: ";", 
+            skipEmptyLines: true,
+            complete: function(results) {
+                const dati = results.data;
+                const bounds = [];
+
+                dati.forEach(riga => {
+                    if (riga.Titolo && riga.Coordinate) {
+                        const coord = riga.Coordinate.split(',').map(c => parseFloat(c.trim()));
+                        
+                        if (!isNaN(coord[0]) && !isNaN(coord[1])) {
+                            const marker = L.marker(coord).addTo(map);
+                            bounds.push(coord);
+
+                            marker.bindTooltip(riga.Titolo, { permanent: true, direction: 'top', className: 'etichetta-nome', offset: [0, -10] });
+
+                            const popupContent = `
+                                <div style="min-width:200px">
+                                    <strong>${riga.Titolo}</strong>
+                                    <p style="font-size:13px">${riga.Descrizione.substring(0, 150)}...</p>
+                                    <button style="background:#2ecc71; color:white; border:none; padding:10px; border-radius:5px; width:100%; cursor:pointer;" 
+                                            onclick="parla('${riga.Descrizione.replace(/'/g, "\\'").replace(/\n/g, " ")}')">▶ ASCOLTA</button>
+                                </div>`;
+                            
+                            marker.bindPopup(popupContent);
+                        }
+                    }
+                });
+                if (bounds.length > 0) map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        });
+
+        // Tasto GPS
         const gpsControl = L.Control.extend({
             options: { position: 'bottomright' },
             onAdd: function() {
@@ -88,59 +87,7 @@
             }
         });
         map.addControl(new gpsControl());
-
-        map.on('locationfound', function(e) {
-            L.marker(e.latlng).addTo(map).bindPopup("La tua posizione").openPopup();
-        });
-
-        // 4. LETTURA DINAMICA DAL CSV
-        // Assicurati che il file si chiami 'punti.csv' e sia nella stessa cartella dell'index.html su GitHub
-        const URL_CSV = 'punti.csv'; 
-
-        Papa.parse(URL_CSV, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                const dati = results.data;
-                const bounds = [];
-
-                dati.forEach(riga => {
-                    // Controlliamo che i campi non siano vuoti
-                    if (riga.Titolo && riga.Coordinate && riga.Descrizione) {
-                        
-                        // Convertiamo la stringa "-7.60, 110.20" in numeri [lat, lon]
-                        const coord = riga.Coordinate.split(',').map(c => parseFloat(c.trim()));
-                        
-                        if (!isNaN(coord[0]) && !isNaN(coord[1])) {
-                            const marker = L.marker(coord).addTo(map);
-                            bounds.push(coord);
-
-                            // Etichetta sempre visibile
-                            marker.bindTooltip(riga.Titolo, { 
-                                permanent: true, 
-                                direction: 'top', 
-                                className: 'etichetta-nome', 
-                                offset: [0, -10] 
-                            });
-
-                            // Contenuto Popup
-                            const popupContent = `
-                                <div class="popup-container">
-                                    <strong>${riga.Titolo}</strong>
-                                    <p style="font-size:13px; margin: 10px 0;">${riga.Descrizione}</p>
-                                    <div style="display:flex; justify-content: space-between;">
-                                        <button class="btn-audio" onclick="parla('${riga.Descrizione.replace(/'/g, "\\'")}')">▶ ASCOLTA</button>
-                                        <button class="btn-stop-small" onclick="stopAudio()">■</button>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            marker.bindPopup(popupContent);
-                            marker.on('click', () => parla(riga.Descrizione));
-                        }
-                    }
-                });
-
-                // Zoom automatico per inquadrare tutti i punti caricati
-                if (bounds.length > 0)
+        map.on('locationfound', e => L.marker(e.latlng).addTo(map).bindPopup("Tu sei qui").openPopup());
+    </script>
+</body>
+</html>
