@@ -31,12 +31,35 @@
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        function parla(testo) {
-            window.speechSynthesis.cancel();
+      function parla(testo) {
+            window.speechSynthesis.cancel(); // Ferma eventuali letture precedenti
+            
             const messaggio = new SpeechSynthesisUtterance(testo);
             messaggio.lang = 'it-IT';
+            messaggio.rate = 0.95; // Velocità leggermente più naturale
+            messaggio.pitch = 1;
+
+            // Recuperiamo tutte le voci disponibili nel dispositivo
+            let voci = window.speechSynthesis.getVoices();
+
+            // Cerchiamo una voce italiana che sia fluida (Google, Microsoft o Premium)
+            // Diamo la precedenza a una voce maschile naturale se esiste
+            let voceSelezionata = voci.find(v => v.lang.includes('it') && v.name.includes('Google') && v.name.toLowerCase().includes('male')) || 
+                                 voci.find(v => v.lang.includes('it') && v.name.includes('Google')) ||
+                                 voci.find(v => v.lang.includes('it') && v.name.includes('Microsoft')) ||
+                                 voci.find(v => v.lang.includes('it'));
+
+            if (voceSelezionata) {
+                messaggio.voice = voceSelezionata;
+            }
+
             window.speechSynthesis.speak(messaggio);
         }
+
+        // Questo pezzetto serve a "svegliare" le voci sui browser come Chrome
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
 
         function stopAudio() { window.speechSynthesis.cancel(); }
 
