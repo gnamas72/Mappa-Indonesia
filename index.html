@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mappa Indonesia con GPS</title>
+    <title>Mappa Indonesia - Audio Guida CSV</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -19,21 +19,13 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer;
         }
 
-        /* Bottone GPS Personalizzato */
+        /* Bottone GPS */
         .gps-button {
-            background-color: white;
-            width: 44px;
-            height: 44px;
-            line-height: 44px;
-            text-align: center;
-            border-radius: 5px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            cursor: pointer;
-            font-size: 20px;
-            display: block;
-            margin-bottom: 10px;
+            background-color: white; width: 44px; height: 44px; line-height: 44px;
+            text-align: center; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            cursor: pointer; font-size: 20px; display: block; margin-bottom: 10px;
+            text-decoration: none; color: black;
         }
-        .gps-button:hover { background-color: #f4f4f4; }
 
         .etichetta-nome {
             background: rgba(255, 255, 255, 0.9);
@@ -59,215 +51,96 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <script>
-        const siti = 
-[
-    {
-        nome: "Kota Tua",
-        coord: [-6.138564771606784, 106.81387072334091],
-        desc: "Ingresso gratuito. Tuttavia, i singoli musei all'interno degli edifici coloniali richiedono un biglietto economico, solitamente tra 5.000 e 25.000 IDR (circa 0,30€ - 1,50€) per gli stranieri.Benvenuti nel cuore della  Vecchia Batavia . Kota Tua è ciò che resta del centro amministrativo della Compagnia Olandese delle Indie Orientali (VOC). Questo quartiere è un frammento di Europa del XVII secolo trapiantato ai tropici: palazzi neoclassici, canali simili a quelli di Amsterdam e una grande piazza acciottolata.Curiosità da non perdere:Bici colorate e cappelli: Noterai decine di biciclette vintage dai colori pastello. Si chiamano Onthel. Il cannone  magico : Cerca il cannone Si Jagur vicino al Museo di Storia. Osserva il retro: ha la forma di una mano con il pollice tra l'indice e il medio.Il Cafe Batavia, situato in un edificio del 1830, è il secondo più antico della città. Entra per un drink: l'atmosfera coloniale è intatta, tra ventilatori a soffitto, specchi antichi e una galleria di ritratti "
-    },
-    {
-        nome: "Glodok Chinatown Market",
-        coord: [-6.142788639031194, 106.81420863557638],
-        desc: "L'accesso al mercato è gratuito.Benvenuti a Glodok, la Chinatown più antica e vasta dell'Indonesia. È un vibrante mix di commercio e storia dove convivono templi secolari, banchi di medicina tradizionale cinese .Curiosità da non perdere:Street Food Estremo: Nel vicolo di Gang Gloria, potrai assaggiare piatti leggendari come la zuppa di tartaruga (Pi Oh) o il caffè storico di Kopi Es Tak Kie, aperto dal 1927.Petak Sembilan: È il cuore del mercato tradizionale. Tra vicoli strettissimi troverai merce incredibile: dalle rane vive alle radici di ginseng giganti, fino alle decorazioni rosse per il Capodanno Cinese. All'interno del quartiere sorge il tempio Dharma Bhakti, sopravvissuto a incendi e rivolte, dove il profumo dell'incenso e delle candele di cera rossa è onnipresente.Consiglio : Perditi nei vicoli secondari dietro via Pancoran; è lì che scoprirai i templi nascosti e le botteghe artigiane più antiche."
-    },
-    {
-        nome: "Dharma Bakti Temple",
-        coord: [-6.144474659598047, 106.81264433360184],
-        desc: "L'accesso è gratuito. È consuetudine lasciare una piccola offerta libera all'ingresso o acquistare dei bastoncini d'incenso per sostenere il tempio.Fondato nel 1650, questo è il tempio taoista più antico di Giacarta. Conosciuto anche come Kim Tek Ie, è il cuore spirituale della comunità cinese locale. Un luogo dove il rosso vibrante e l'oro dominano l'architettura. Curiosità da non perdere:Il fumo sacro: Noterai migliaia di bastoncini di incenso e candele giganti (alcune bruciano per giorni). Il fumo denso serve a trasportare le preghiere verso il cielo.La fenice dalle ceneri: Nel 2015 un devastante incendio ha quasi distrutto il tempio. La struttura che vedi oggi è frutto di una ricostruzione devota che ha salvato alcune delle statue originali, annerite dal fuoco ma considerate ancora più sacre.Il rito degli uccellini: Spesso fuori dal tempio trovi venditori di piccoli uccelli in gabbia. I fedeli li acquistano per liberarli, un gesto simbolico che serve ad accumulare karma positivo e liberarsi dai peccati."
-    },
-    {
-        nome: "Grand Mosque of Bandung",
-        coord: [-6.921719217419142, 107.60614376422],
-        desc: "L'accesso alla moschea è gratuito. La salita sui minareti costa circa 10.000 IDR (meno di 1€).È il simbolo spirituale di Bandung, situata sulla storica piazza Alun-Alun. Caratterizzata da una maestosa cupola centrale e due imponenti torri gemelle, è famosa per il suo enorme piazzale ricoperto di erba sintetica verde.Curiosità da non perdere:Vista a 360°: Prendi l'ascensore in uno dei due minareti alti 81 metri. Da lassù avrai la vista migliore di tutta Bandung e delle montagne vulcaniche che la circondano.Il  Salotto  della città: La piazza è l'unica al mondo dove migliaia di persone camminano scalze su un prato sintetico impeccabile. È il luogo preferito dai locali per i selfie e per far giocare i bambini in totale libertà.Km Zero: La moschea si trova esattamente di fronte al punto che segna il  Chilometro Zero  di Bandung, vicino alla storica via della Conferenza Asia-Africa del 1955.Consiglio dell'esperto: Ricordati di togliere le scarpe prima di calpestare l'erba sintetica della piazza ."
-    },
-    {
-        nome: "Saung Angklung Udjo",
-        coord: [-6.898016639985629, 107.65525419463611],
-        desc: "Ingresso: A pagamento. Il biglietto per gli adulti costa circa 120.000 IDR (circa 7€).Il prezzo solitamente include un drink di benvenuto, un libretto informativo e un piccolo souvenir in bambù.Cos'è:Situato a Bandung, è un centro culturale dedicato alla conservazione della musica e delle tradizioni della popolazione Sondanese. È famoso in tutto il mondo per l'Angklung, uno strumento musicale realizzato interamente in tubi di bambù, inserito dall'UNESCO tra i patrimoni dell'umanità. È un villaggio-laboratorio dove l'artigianato e l'arte performativa si fondono.Curiosità da non perdere:Direttore d'orchestra per un giorno: Il momento clou dello spettacolo è quando il maestro distribuisce un angklung a ogni spettatore. In pochi minuti, guidando centinaia di persone contemporaneamente con semplici gesti delle mani, l'intero pubblico impara a suonare una canzone famosa all'unisono.Bambini prodigio: Molti dei ballerini e dei musicisti sono bambini della comunità locale, che iniziano a studiare e a esibirsi qui fin da piccolissimi (anche a 4 anni), portando avanti l'eredità culturale dei loro nonni.Souvenir sonoro: Spesso il biglietto o l'omaggio finale è un ciondolo a forma di mini-angklung che emette una nota reale. È il modo del centro per far sì che ogni visitatore porti a casa un  pezzo  della musica indonesiana.Consiglio dell'esperto: Lo spettacolo principale si tiene solitamente nel pomeriggio (intorno alle 15:30). Arriva presto per esplorare il negozio di artigianato, dove potrai vedere come vengono intagliati a mano gli strumenti di bambù."
-    },
-    {
-        nome: "Borobudur",
-        coord: [-7.6079396922112545, 110.20382866146281],
-        desc: "Ingresso a pagamento. Per i turisti stranieri, il biglietto per accedere al parco costa circa 375.000 IDR (circa 22€). Se desideri salire sulla struttura del tempio (accesso limitato), è necessario un biglietto speciale che costa circa 455.000 IDR (circa 27€) e include una guida obbligatoria e calzari speciali in bambù (upanat).Cos'è:Situato vicino a Magelang, in Giava Centrale, è il tempio buddista più grande del mondo e un sito Patrimonio dell'Umanità UNESCO. Costruito tra l'VIII e il IX secolo dalla dinastia Sailendra, fu abbandonato per secoli e rimase nascosto sotto strati di cenere vulcanica e giungla fino alla sua riscoperta nel 1814. È un'imponente piramide a gradoni decorata con oltre 2.600 bassorilievi e 504 statue di Buddha.Curiosità da non perdere:Un Mandala Gigante: Visto dall'alto, il tempio ha la forma di un gigantesco Mandala buddista, che rappresenta la cosmologia buddista e il cammino della mente verso l'illuminazione.Le Stupa a  Gabbia : Le iconiche strutture a forma di campana sulla sommità sono traforate. All'interno di ognuna si trova una statua di Buddha. Una leggenda locale dice che toccare il Buddha all'interno di una determinata stupa porti grande fortuna.Incastri Perfetti: L'intera struttura è stata costruita senza l'uso di malta o cemento. I circa due milioni di blocchi di pietra vulcanica sono stati tagliati e incastrati tra loro come un enorme puzzle tridimensionale.Consiglio dell'esperto: Prenota i biglietti online con largo anticipo se vuoi salire sulla struttura superiore, poiché i posti sono contingentati e si esauriscono in fretta. L'alba dal tempio è considerata una delle esperienze più spettacolari di tutta l'Asia."
-    },
-    {
-        nome: "Pawon Temple",
-        coord: [-7.606131076955436, 110.21959392975188],
-        desc: "Ingresso a pagamento. Il biglietto costa solitamente circa 20.000 IDR (poco più di 1€). Spesso è incluso in biglietti combinati che comprendono anche il vicino tempio di Mendut.Cos'è:Situato a circa 1,5 km da Borobudur, il Tempio di Pawon è un piccolo ma squisito gioiello dell'architettura buddista del IX secolo. Fa parte di un complesso di tre templi (Borobudur, Pawon e Mendut) che si trovano allineati lungo una retta perfetta, suggerendo un percorso rituale che i pellegrini compivano secoli fa.Curiosità da non perdere:Il Mistero del Nome: Il termine  Pawon  in giavanese significa  cucina . Alcuni ritengono che fosse un luogo di cremazione per la famiglia reale, mentre altri suggeriscono che derivi dalla parola per-awu-an (luogo della polvere/cenere).Architettura a  Scatola : A differenza della maestosità di Borobudur, Pawon è famoso per le sue proporzioni eleganti e compatte. È costruito con pietre vulcaniche e presenta bellissimi rilievi di Kalpataru (l'albero della vita) circondato da creature divine e borse di denaro.Finestrelle di Ventilazione: Noterai delle piccole aperture nella parte superiore del tempio. Non sono comuni nei templi giavanesi dell'epoca e servivano probabilmente per far uscire il fumo dell'incenso o per far circolare l'aria durante i rituali interni.Consiglio dell'esperto: Molti lo considerano solo una  tappa fotografica  rapida, ma vale la pena fermarsi per osservare la precisione dei bassorilievi, che sono tra i meglio conservati della zona. Si raggiunge facilmente in bicicletta o con un tipico carretto trainato da cavalli (andong) partendo da Borobudur."
-    },
-    {
-        nome: "Mendut Temple",
-        coord: [-7.604790805521122, 110.23008355945865],
-        desc: "Ecco la tua guida rapida per il Tempio di Mendut (Candi Mendut):Ingresso: A pagamento. Il biglietto costa circa 20.000 IDR (poco più di 1€). Solitamente è un biglietto combinato che include anche l'accesso al Tempio di Pawon.Cos'è:Costruito all'inizio del IX secolo, è il più antico dei tre templi del complesso (Mendut-Pawon-Borobudur). Nonostante l'esterno possa sembrare semplice rispetto a Borobudur, il suo interno custodisce alcuni dei tesori artistici più preziosi di tutta l'Indonesia. È un luogo di culto ancora attivo, affiancato da un monastero buddista moderno.Curiosità da non perdere:Le Tre Statue Giganti: A differenza di molti altri templi dove le celle sono vuote, all'interno di Mendut troverai tre imponenti statue in pietra originali, alte circa 3 metri. La centrale raffigura il Buddha in una posa insolita: seduto con entrambi i piedi a terra,  all'occidentale , anziché nella classica posizione del loto.L'Albero di Banyan: Accanto al tempio svetta un enorme e antico albero di Banyan. È un luogo iconico dove i visitatori spesso si fermano a meditare o a godersi l'ombra, rendendo l'atmosfera molto mistica.Bassorilievi Narrativi: Le pareti esterne sono decorate con pannelli che raccontano i Jataka (storie delle vite precedenti del Buddha), spesso raffigurati tramite animali, come favole morali scolpite nella pietra.Consiglio dell'esperto: Se hai tempo, visita il monastero adiacente (Mendut Buddhist Monastery). È un'oasi di pace con giardini curatissimi, statue di Buddha in diversi stili asiatici e un'atmosfera di profonda serenità, perfetta per chiudere il percorso spirituale iniziato a Borobudur."
-    },
-    {
-        nome: "Ngasem Traditional Market",
-        coord: [-7.808144210790886, 110.36001203771305],
-        desc: "L'accesso al mercato è gratuito.Cos'è:Situato a Yogyakarta, a pochi passi dal complesso del Castello d'Acqua (Taman Sari), il Mercato di Ngasem è uno dei mercati più storici e vivaci della città. Un tempo famoso come il più grande mercato di uccelli di Java, oggi è stato riconvertito in un mercato alimentare e di beni di prima necessità, offrendo uno spaccato autentico della vita quotidiana giavanese.Curiosità da non perdere:Dagli Uccelli al Cibo: Fino al 2010, questo mercato era il regno dei collezionisti di uccelli esotici. Oggi gli uccelli sono stati spostati altrove, ma l'area è diventata il paradiso del cibo di strada. È il posto migliore per assaggiare snack tradizionali come l' Apem (frittelle di riso cotte su pietra).Posizione Reale: Il mercato si trova all'interno delle mura del Jerjeron Beteng (l'area interna al Palazzo del Sultano). L'architettura stessa dei banchi e delle strutture riflette lo stile tradizionale locale.Paradiso Fotografico: Grazie alla sua vicinanza a Taman Sari e alle sue mura storiche ricoperte di muschio, è uno dei luoghi preferiti dai fotografi per catturare l'essenza della Yogyakarta più verace.Consiglio dell'esperto: Arriva la mattina presto (verso le 7:00) per vedere il mercato nel pieno della sua attività e per trovare la più ampia varietà di dolci tradizionali appena fatti. È il luogo ideale per una colazione economica e autentica dopo aver visitato il Kraton."
-    },
-    {
-        nome: "Taman Sari Tourist Village",
-        coord: [-7.8099626761331935, 110.35900361494427],
-        desc: "Ingresso: L'accesso al villaggio e alle stradine è gratuito. Tuttavia, per entrare nel complesso principale del castello d'acqua (le piscine e le aree storiche) il biglietto per stranieri costa circa 15.000 IDR (meno di 1€), più un piccolo supplemento per l'uso della fotocamera.Cos'è:È il quartiere vibrante che circonda l'antico Castello d'Acqua del Sultano a Yogyakarta. Un tempo giardino reale privato, oggi è un dedalo di vicoli pulitissimi, case decorate e laboratori artigianali dove la comunità locale vive in simbiosi con le rovine storiche. È uno dei migliori esempi di rigenerazione urbana in Indonesia.Curiosità da non perdere:Street Art e Batik: Il villaggio è famoso per i suoi murales colorati e i numerosi laboratori di Batik. Passeggiando tra i vicoli, potrai vedere gli artisti all'opera mentre disegnano sulla stoffa con la cera calda.La Moschea Sotterranea: Nascosta tra le case del villaggio si trova l'ingresso per Sumur Gumuling, una straordinaria moschea circolare sotterranea con una scala centrale a cinque rami che si incrociano, costruita così per motivi acustici e simbolici.Labirinto Storico: Molte case dei residenti sono costruite sopra o dentro le antiche strutture del palazzo. Non stupirti se un vicolo cieco ti porta improvvisamente davanti a un portale reale del XVIII secolo o a una sezione di mura antiche.Consiglio dell'esperto: Non limitarti alle piscine principali. Perditi nel villaggio seguendo i cartelli per la  Moschea Sotterranea  o le gallerie d'arte; è lì che troverai gli angoli più fotogenici e la vera atmosfera della Yogyakarta artistica."
-    },
-    {
-        nome: "Alun Alun Kidul",
-        coord: [-7.811963293917376, 110.36322683174224],
-        desc: "Ingresso: Gratuito (si paga solo il parcheggio se arrivi con un mezzo proprio).Cos'è:Conosciuta come la  Piazza Meridionale , è il cortile posteriore del Palazzo del Sultano (Kraton) di Yogyakarta. Se di giorno appare come uno spazio calmo e tranquillo, di notte si trasforma nel centro del divertimento popolare più vivace della città, tra luci colorate, musica e street food.Curiosità da non perdere:La tradizione del Masangin: È l'attività più iconica. Devi cercare di camminare bendato passando esattamente tra i due grandi alberi di banyan (fichi sacri) al centro della piazza. La leggenda dice che solo chi ha il cuore puro riesca a procedere dritto senza deviare.Le  Odong-odong  al neon: Vedrai decine di auto a pedali decorate con migliaia di luci LED colorate e musica ad alto volume. Puoi noleggiarle per fare il giro della piazza in modo decisamente stravagante.Street Food serale: È il posto perfetto per provare il Wedang Ronde (una bevanda calda allo zenzero con palline di riso glutinoso), pannocchie grigliate e pane tostato, mangiando seduti sui tappeti (lesehan) stesi sull'erba.Consiglio dell'esperto: Arriva dopo le 19:00, quando l'atmosfera è al culmine. Se vuoi tentare la sfida del Masangin, puoi affittare una benda dai venditori locali per circa 5.000 IDR (circa 0,30€)."
-    },
-    {
-        nome: "Prambanan",
-        coord: [-7.752016013492026, 110.49130796620798],
-        desc: "Ingresso: A pagamento. Per i turisti stranieri, il biglietto costa circa 375.000 IDR (circa 22€). È disponibile anche un biglietto combinato con Borobudur al costo di circa 675.000 IDR (circa 40€), valido per 48 ore.Cos'è:Situato al confine tra Yogyakarta e Giava Centrale, è il più grande complesso templare indù dell'Indonesia e uno dei più maestosi del sud-est asiatico. Costruito nel IX secolo, è dedicato alla Trimurti: Brahma (il Creatore), Vishnu (il Preservatore) e Shiva (il Distruttore). Le sue guglie di pietra, alte e slanciate, sono un capolavoro di architettura indù.Curiosità da non perdere:La Leggenda delle 1000 Statue: La tradizione locale narra di una principessa, Roro Jonggrang, che chiese a un pretendente non amato di costruire 1000 templi in una sola notte. Lui quasi ci riuscì grazie ai demoni, ma lei lo ingannò facendo sorgere il sole prima del tempo. Per punizione, lui trasformò la principessa nella millesima statua, che si dice sia quella della dea Durga all'interno del tempio principale.Ramayana Ballet: Di sera, il complesso diventa lo scenario mozzafiato per il Ramayana Ballet, una danza tradizionale che mette in scena l'epica indù con centinaia di ballerini, senza dialoghi, proprio davanti ai templi illuminati.Allineamento Celeste: Come Borobudur, anche Prambanan è stato costruito con una precisione geometrica e astronomica impressionante, con i templi principali orientati verso i punti cardinali.Consiglio dell'esperto: Il momento migliore per visitarlo è il tardo pomeriggio. La luce dorata del tramonto sulle guglie di pietra è spettacolare e le temperature sono più gradevoli rispetto al mattino."
-    },
-    {
-        nome: "Lumbung Temple",
-        coord: [-7.748102609992718, 110.4929528582718],
-        desc: "Ingresso: A pagamento. Il biglietto è solitamente incluso nel costo d'ingresso del complesso del Tempio di Prambanan (circa 375.000 IDR, ovvero 22€ per gli stranieri), poiché si trova all'interno dello stesso parco archeologico.Cos'è:Situato a poche centinaia di metri a nord del complesso principale di Prambanan, il Tempio di Lumbung è un insieme di templi buddisti del IX secolo. Nonostante la vicinanza ai giganti indù di Prambanan, questo sito testimonia la pacifica coesistenza tra buddismo e induismo nell'antica Giava. Il complesso è composto da un tempio principale circondato da 16 templi minori (perwara).Curiosità da non perdere:Il  Granaio  di Pietra: Il nome Lumbung significa  granaio  in lingua giavanese. Il tempio è stato chiamato così dalla popolazione locale perché la forma della sua struttura principale ricorda i tradizionali depositi di riso della zona.Coesistenza Religiosa: È affascinante notare come, nello stesso parco, si trovino templi indù (Prambanan) e templi buddisti (Lumbung, Bubrah e Sewu). Questo indica che le due religioni non solo convivevano, ma condividevano lo stesso spazio sacro e stili architettonici simili.Architettura Compatta: A differenza della verticalità di Prambanan, Lumbung è più raccolto. Le pareti sono decorate con rilievi di Kuvera (dio della ricchezza) e figure femminili, tipiche dell'iconografia buddista dell'epoca.Consiglio dell'esperto: Molti turisti si fermano a Prambanan e tornano indietro. Ti consiglio di proseguire a piedi o noleggiare una bicicletta all'interno del parco per visitare Lumbung e il vicino tempio di Sewu; troverai molta meno folla e un'atmosfera decisamente più contemplativa."
-    },
-    {
-        nome: "Bubrah Temple",
-        coord: [-7.7464875436926, 110.49296373291821],
-        desc: "Ingresso: A pagamento. Come per il Tempio di Lumbung, l'accesso è incluso nel biglietto del parco archeologico di Prambanan (circa 375.000 IDR / 22€ per gli stranieri).Cos'è:Situato tra il complesso di Prambanan e quello di Sewu, è un tempio buddista del IX secolo. Il suo nome, Bubrah, in giavanese significa letteralmente  distrutto  o  in rovina , perché per secoli è apparso come un cumulo informe di pietre. Tuttavia, nel 2017 è terminato un imponente lavoro di restauro che lo ha riportato al suo antico splendore.Curiosità da non perdere:Un Gioiello  Nuovo : Grazie al recente restauro, il Bubrah è oggi uno dei templi esteticamente più rifiniti e  puliti  del parco. È un'occasione rara per vedere come apparivano queste strutture appena completate mille anni fa.Il Mandala di Pietra: Si ritiene che faccia parte di una serie di templi che formavano un mandala protettivo attorno al grande tempio di Sewu. La sua struttura è piccola ma elegantemente proporzionata, con bellissimi bassorilievi che decorano la base.Stupa Gigante: La sommità del tempio è coronata da una grande stupa centrale, simbolo tipico del buddismo, che contrasta con le guglie appuntite del vicino Prambanan indù.Consiglio dell'esperto: Poiché è situato proprio a metà del sentiero che porta da Prambanan a Sewu, è la sosta perfetta per una foto. Spesso i turisti lo saltano, quindi avrai la possibilità di ammirare i suoi dettagli architettonici in totale solitudine."
-    },
-    {
-        nome: "Kasunanan Palace, Surakarta Hadiningrat",
-        coord: [-7.577793289708861, 110.82792994451688],
-        desc: "Ingresso: A pagamento. Il biglietto per i turisti stranieri costa circa 50.000 IDR (circa 3€). È previsto un piccolo supplemento per l'uso della fotocamera e, solitamente, è richiesta una guida locale per accedere ad alcune aree.Cos'è:Fondato nel 1744, è il cuore storico e spirituale di Solo (Surakarta). Questo palazzo reale è la residenza ufficiale del Sultano (Sunan) ed è un esempio sublime di architettura giavanese classica con influenze coloniali europee. Una parte del complesso è adibita a museo, dove sono custoditi i tesori della dinastia Mataram.Curiosità da non perdere:La Torre del Meditatore: La torre Panggung Sangga Buwana è l'edificio più iconico. Si dice che il Sultano la usi per meditare e per incontrare spiritualmente Nyai Roro Kidul, la leggendaria Regina del Mare del Sud.Le Carrozze Reali: Nel museo potrai ammirare una collezione di carrozze dorate del XVIII e XIX secolo, alcune delle quali furono donate da sovrani europei. Sono ancora utilizzate per le sfilate cerimoniali più importanti.I Bufali Sacri: Il palazzo è custode dei Kebo Bule (bufali albini), discendenti del bufalo sacro Kyai Slamet. Sono considerati animali magici; durante le processioni del capodanno giavanese, la folla cerca di toccarli (o persino di raccoglierne lo sterco) come segno di buon auspicio.Consiglio dell'esperto: Attenzione al dress code. È severamente vietato indossare pantaloncini corti, canottiere, cappelli o occhiali da sole all'interno dell'area sacra. Se arrivi con i sandali, potresti dover camminare scalzi in alcune zone ricoperte di sabbia vulcanica, portata appositamente dal Monte Merapi e dalle spiagge del sud."
-    },
-    {
-        nome: "Red Bridge Jembatan Merah",
-        coord: [-7.236529992977461, 112.73810741264491],
-        desc: "Ecco la tua guida rapida per il Jembatan Merah (Ponte Rosso) di Surabaya:Ingresso: Gratuito. È un ponte pubblico situato nel cuore della città, accessibile liberamente in qualsiasi momento.Cos'è:Situato sopra il fiume Kali Mas, il Jembatan Merah è uno dei monumenti storici più significativi di Surabaya. Durante l'epoca coloniale olandese, era il fulcro del commercio cittadino. Sebbene il nome derivi dal colore rosso della struttura, è diventato un simbolo del sacrificio dei combattenti indonesiani durante la lotta per l'indipendenza.Curiosità da non perdere:Testimone di Battaglia: Questo luogo è legato alla morte del generale britannico A.W.S. Mallaby nel 1945. Questo evento scatenò la sanguinosa  Battaglia di Surabaya  del 10 novembre, data che oggi l'Indonesia celebra come la Giornata degli Eroi.Atmosfera Retrò: Il ponte è la porta d'accesso alla città vecchia. Intorno a te vedrai edifici coloniali imponenti e ben conservati, come l'edificio Internatio, che rendono la zona un set perfetto per fotografie d'epoca.Shopping Storico: Accanto al ponte si trova il Jembatan Merah Plaza (JMP), uno dei centri commerciali all'ingrosso di tessuti e abbigliamento più antichi e famosi della città.Consiglio dell'esperto: Visitalo nel tardo pomeriggio. Quando le luci della città si riflettono sul fiume e illuminano le facciate dei palazzi olandesi, l'atmosfera diventa estremamente suggestiva e carica di storia."
-    },
-    {
-        nome: "Ps. Pabean",
-        coord: [-7.234742582591424, 112.74073580434899],
-        desc: "Ingresso: Gratuito.Cos'è:Fondato nel 1849, il Mercato di Pabean è il mercato più antico e autentico di Surabaya. È un labirinto sensoriale situato tra il quartiere cinese e quello arabo. Aperto 24 ore su 24, è il principale mercato ittico della città, ma è celebre soprattutto per essere il cuore pulsante del commercio di spezie e prodotti secchi di Giava Orientale.Curiosità da non perdere:L'Impero delle Cipolle: Pabean è famoso in tutta l'Indonesia per il commercio di scalogno e aglio. Vedrai montagne di questi prodotti e centinaia di facchini che trasportano sacchi pesantissimi con un'agilità impressionante.Profumo di Mare e Spezie: L'odore qui è unico: un mix pungente di pesce fresco (portato direttamente dal porto di Kalimas), tabacco, pepe e aromi orientali. È il posto dove i migliori chef della città vengono a rifornirsi all'alba.Architettura  Sospesa : Le strutture del mercato conservano ancora i vecchi tetti in legno e mattoni rossi dell'Ottocento. Camminare tra i suoi vicoli stretti e bui ti darà la sensazione di essere tornato indietro di un secolo, nel pieno dell'era coloniale."
-    },
-    {
-        nome: "Temple Hong Tiek Hian",
-        coord: [-7.237384837766761, 112.74389529901374],
-        desc: "Ingresso: L'accesso al tempio è solitamente gratuito, ma è buona norma lasciare una piccola offerta o acquistare degli incensi se si desidera scattare molte foto.Cos'è:Situato nel cuore del quartiere cinese di Surabaya (vicino al mercato di Pabean), l'Hong Tiek Hian è considerato il tempio cinese più antico della città. Si dice sia stato costruito dalle truppe mongole di Kublai Khan nel XIII secolo, anche se la struttura attuale risale a epoche successive. È un centro spirituale vibrante dove convivono Buddismo, Taoismo e Confucianesimo.Curiosità da non perdere:Doppia Struttura: Il tempio è diviso in due edifici principali situati ai lati opposti di una stretta stradina. Sono collegati da un ponte sospeso che funge anche da altare superiore, creando un paesaggio urbano unico.Spettacoli di Potehi: Il tempio è famoso per ospitare regolarmente spettacoli di Wayang Potehi, il teatro delle marionette cinesi. È una delle poche tradizioni rimaste che racconta storie di antiche leggende cinesi attraverso burattini in tessuto.Atmosfera Mistica: L'interno è perennemente avvolto dal fumo denso degli incensi e decorato con lanterne rosse, draghi dorati e candele enormi. È un luogo estremamente fotogenico che conserva un'atmosfera sacra e autentica, lontano dai circuiti turistici di massa.Consiglio dell'esperto: Visitalo durante il Capodanno Cinese (Imlek) per vedere il tempio nel pieno della sua attività, tra danze del leone (Barongsai) e centinaia di fedeli in preghiera. Se passi durante il giorno, chiedi ai custodi se c'è in programma uno spettacolo di marionette; è un'esperienza culturale rara e affascinante."
-    },
-    {
-        nome: "Badut Temple",
-        coord: [-7.957829941246795, 112.5986883259508],
-        desc: "Ingresso: A pagamento. Il costo del biglietto è solitamente molto contenuto, intorno alle 10.000 - 15.000 IDR (circa 1€).Cos'è:Situato a Malang, in Giava Orientale, il Tempio di Badut è considerato il tempio più antico di questa regione. Risale al 760 d.C. e fu costruito durante il regno di Re Gajayana della dinastia Kanjuruhan. È un tempio indù dedicato al dio Shiva, scoperto in rovina nel 1921 e successivamente restaurato.Curiosità da non perdere:Il Nome  Buffone : In giavanese moderno, Badut significa  pagliaccio  o  buffone . Tuttavia, si ritiene che il nome derivi dalla parola sanscrita Badyat, che si riferisce alla stella Canopo, oppure dal soprannome del Re Gajayana, noto per il suo spirito gioviale e umoristico.Stile di Transizione: Architettonicamente, il tempio è molto interessante perché funge da ponte tra lo stile dei templi di Giava Centrale (come Prambanan) e quelli successivi di Giava Orientale. Ha una base larga e robusta con sculture di Kala (mostri guardiani) sopra l'ingresso che stranamente non hanno la mascella inferiore.Il Lingam e la Yoni: All'interno della camera principale del tempio è ancora possibile vedere il Lingam e la Yoni, i simboli sacri che rappresentano l'unione delle energie maschili e femminili e la fertilità del dio Shiva.Consiglio dell'esperto: Il tempio si trova in una zona residenziale un po' nascosta di Malang. È il luogo ideale per chi cerca un'esperienza tranquilla lontano dai grandi flussi turistici. Spesso sarai l'unico visitatore, potendo godere appieno della pace del piccolo giardino che lo circonda."
-    },
-    {
-        nome: "Alun Alun Malang",
-        coord: [-7.982617163247292, 112.63072868768022],
-        desc: "Ingresso: Gratuito.Cos'è:Situata nel cuore pulsante di Malang, l'Alun-Alun Malang (conosciuta anche come Alun-Alun Merdeka) è una delle piazze più antiche e iconiche della città. È un grande spazio verde urbano che funge da polmone per i cittadini e da centro per la vita sociale. A differenza di molte altre piazze indonesiane, è caratterizzata da una fitta vegetazione e da un'atmosfera simile a quella di un parco cittadino.Curiosità da non perdere:Simbolismo e Storia: La piazza è circondata da edifici che rappresentano i pilastri della società indonesiana: il governo (l'ufficio del reggente), la spiritualità (la Grande Moschea Jami' e la Chiesa di Immanuel) e l'economia (centri commerciali storici). Questa disposizione riflette la filosofia del  quadrato armonioso .I Piccioni di Malang: Una delle attrazioni più amate è la presenza di centinaia di piccioni che abitano la piazza. Ci sono piccole casette in legno per loro, ed è comune vedere famiglie e bambini che offrono loro del cibo, creando un'atmosfera che ricorda Piazza San Marco a Venezia.La Fontana Danzante: Al centro della piazza si trova una grande fontana che, di sera, si illumina con giochi di luce colorata, rendendo il parco un luogo di ritrovo molto popolare dopo il tramonto.Consiglio dell'esperto: La piazza è strategicamente vicina ad altri punti di interesse. Dopo una passeggiata nel parco, attraversa la strada per visitare la Grande Moschea Jami' (uno splendido esempio di architettura giavanese e araba) o dirigiti verso il leggendario Toko Oen, un ristorante storico che conserva ancora lo stile e l'arredamento dell'epoca coloniale"
-    },
-    {
-        nome: "Tumpak Sewu Waterfall",
-        coord: [-8.231398000393275, 112.91754416818469],
-        desc: "Ingresso: A pagamento. Il costo per i turisti stranieri è di circa 20.000 - 30.000 IDR (meno di 2€). È previsto un piccolo costo aggiuntivo per il parcheggio e, se decidi di scendere alla base, potresti dover pagare un ulteriore piccolo pedaggio ai guardiani locali.Cos'è:Situata al confine tra le reggenze di Lumajang e Malang, in Giava Orientale, Tumpak Sewu è considerata da molti la cascata più spettacolare dell'Indonesia, se non di tutta l'Asia. Il suo nome significa letteralmente  Mille Cascate  in lingua giavanese, a causa delle innumerevoli vene d'acqua che precipitano da una parete semicircolare alta circa 120 metri.Curiosità da non perdere:Un Anfiteatro Naturale: A differenza delle classiche cascate a getto singolo, Tumpak Sewu forma un perfetto anfiteatro di acqua e vegetazione lussureggiante che sembra uscito dal film Jurassic Park.Sotto l'ombra del Gigante: Nelle giornate limpide, sullo sfondo della cascata, svetta imponente il Monte Semeru, il vulcano più alto e attivo di Giava, creando uno scenario fotografico mozzafiato.La Discesa Avventurosa: Esistono due modi per vederla. Il primo è dai punti panoramici superiori (Panorama Point). Il secondo è scendere fino alla base attraverso un sentiero ripido fatto di scale di bambù e rocce bagnate: un'esperienza adrenalinica che ti permette di sentire tutta la potenza dell'acqua.Consiglio dell'esperto: Arriva il mattino presto (verso le 7:00 o le 8:00) per avere le migliori condizioni di luce e per evitare la nebbia che spesso sale nel pomeriggio. Se decidi di scendere alla base, indossa scarpe con un ottimo grip o sandali da trekking e porta una sacca stagna per proteggere la tua attrezzatura elettronica, poiché verrai bagnato costantemente dai vapori acquei."
-    },
-    {
-        nome: "Monte Bromo",
-        coord: [-7.942307853643189, 112.95290828562668],
-        desc: "Ingresso: A pagamento. Per i turisti stranieri, il biglietto per il Parco Nazionale di Bromo Tengger Semeru costa circa 220.000 IDR (circa 13€) nei giorni feriali e 320.000 IDR (circa 19€) nei giorni festivi.Cos'è:Situato in Giava Orientale, il Monte Bromo è uno dei vulcani più attivi e iconici dell'Indonesia. Nonostante non sia la cima più alta del massiccio (2.329 metri), è il più famoso per la sua bellezza surreale. Si trova all'interno di una vasta pianura chiamata  Mare di Sabbia , una caldera vulcanica protetta che regala un paesaggio quasi lunare.Curiosità da non perdere:Il Cratere Accessibile: Una volta attraversato il Mare di Sabbia, puoi salire una scalinata di circa 250 gradini che ti porta proprio sul bordo del cratere attivo. Da qui potrai sentire il ruggito del vulcano e vedere il fumo sulfureo che sale dalle profondità.La Leggenda del Sacrificio: Il nome  Bromo  deriva dalla pronuncia giavanese di Brahma, il dio creatore indù. Ogni anno, durante il festival Yadnya Kasada, la popolazione locale dei Tengger sale sul vulcano per gettare offerte (fiori, cibo e talvolta bestiame) nel cratere come segno di gratitudine e devozione.Punto Panoramico di Penanjakan: Per la classica foto da cartolina con il Bromo che svetta tra le nuvole e il fumo, bisogna salire sul vicino Monte Penanjakan prima dell'alba. Il panorama che si apre quando sorge il sole è considerato uno dei più belli al mondo.Consiglio dell'esperto: Il modo più comune per visitarlo è partecipare a un tour in Jeep 4x4 che parte da villaggi come Cemoro Lawang intorno alle 3:00 del mattino. Porta abiti molto caldi (piumino, berretto e guanti): prima dell'alba la temperatura vicino alla vetta può scendere vicino allo zero, anche se sei ai tropici!"
-    }
-        ];
-
-        const map = L.map('map', { zoomControl: false });
+        // 1. Configurazione Iniziale Mappa
+        const map = L.map('map', { zoomControl: false }).setView([-2.5, 118], 5);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '© CARTO'
         }).addTo(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-// --- AGGIUNTA BOTTONE GPS ---
+
+        // 2. Funzioni Audio
+        function parla(testo) {
+            window.speechSynthesis.cancel();
+            const messaggio = new SpeechSynthesisUtterance(testo);
+            messaggio.lang = 'it-IT';
+            messaggio.rate = 0.9;
+            window.speechSynthesis.speak(messaggio);
+        }
+
+        function stopAudio() {
+            window.speechSynthesis.cancel();
+        }
+
+        // 3. Logica GPS
         const gpsControl = L.Control.extend({
             options: { position: 'bottomright' },
             onAdd: function() {
                 const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
                 const button = L.DomUtil.create('a', 'gps-button', container);
                 button.innerHTML = '🎯';
-                button.title = "Trova la mia posizione";
-
-                button.onclick = function() {
-                    map.locate({setView: true, maxZoom: 16});
-                };
+                button.onclick = function() { map.locate({setView: true, maxZoom: 16}); };
                 return container;
             }
         });
         map.addControl(new gpsControl());
 
-        // Gestione errore o successo localizzazione
         map.on('locationfound', function(e) {
-            L.marker(e.latlng).addTo(map).bindPopup("Tu sei qui").openPopup();
-        });
-        map.on('locationerror', function() {
-            alert("Impossibile accedere alla tua posizione. Controlla i permessi del browser.");
-        });
-        // ----------------------------
- function parla(testo) {
-    window.speechSynthesis.cancel();
-    const messaggio = new SpeechSynthesisUtterance(testo);
-    
-    // Recuperiamo tutte le voci disponibili nel dispositivo
-    let voci = window.speechSynthesis.getVoices();
-    
-    // Cerchiamo una voce italiana che sembri più naturale
-    // Spesso le voci "Google" o quelle indicate come "Natural" sono migliori
-    let voceMigliore = voci.find(v => v.lang === 'it-IT' && v.name.includes('Google')) || 
-                      voci.find(v => v.lang === 'it-IT') || 
-                      voci[0];
-
-    messaggio.voice = voceMigliore;
-    messaggio.lang = 'it-IT';
-    messaggio.pitch = 1.1; // Leggermente più acuta per essere meno cupa
-    messaggio.rate = 0.9;  // Un po' più lenta per dare enfasi
-    
-    window.speechSynthesis.speak(messaggio);
-}
-
-// Necessario perché le voci vengono caricate in modo asincrono
-window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-};
-        function stopAudio() {
-            window.speechSynthesis.cancel();
-        }
-
-        const bounds = [];
-        siti.forEach(sito => {
-            const marker = L.marker(sito.coord).addTo(map);
-            bounds.push(sito.coord);
-
-            // 1. ETICHETTA SEMPRE VISIBILE (Tooltip permanente)
-            marker.bindTooltip(sito.nome, {
-                permanent: true, 
-                direction: 'top', 
-                className: 'etichetta-nome',
-                offset: [0, -10]
-            });
-            
-            // 2. POPUP CON DESCRIZIONE (Si apre al click)
-            const popupContent = `
-                <div class="popup-container">
-                    <strong>${sito.nome}</strong>
-                    <p style="font-size:13px; margin: 10px 0;">${sito.desc}</p>
-                    <div style="display:flex; justify-content: space-between;">
-                        <button class="btn-audio" onclick="parla('${sito.desc.replace(/'/g, "\\'")}')">▶ ASCOLTA</button>
-                        <button class="btn-stop-small" onclick="stopAudio()">■</button>
-                    </div>
-                </div>
-            `;
-            
-            marker.bindPopup(popupContent);
-            marker.on('click', () => parla(sito.desc));
+            L.marker(e.latlng).addTo(map).bindPopup("La tua posizione").openPopup();
         });
 
-        if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [100, 100] });
-        }
-    </script>
-</body>
-</html>
+        // 4. LETTURA DINAMICA DAL CSV
+        // Assicurati che il file si chiami 'punti.csv' e sia nella stessa cartella dell'index.html su GitHub
+        const URL_CSV = 'punti.csv'; 
+
+        Papa.parse(URL_CSV, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const dati = results.data;
+                const bounds = [];
+
+                dati.forEach(riga => {
+                    // Controlliamo che i campi non siano vuoti
+                    if (riga.Titolo && riga.Coordinate && riga.Descrizione) {
+                        
+                        // Convertiamo la stringa "-7.60, 110.20" in numeri [lat, lon]
+                        const coord = riga.Coordinate.split(',').map(c => parseFloat(c.trim()));
+                        
+                        if (!isNaN(coord[0]) && !isNaN(coord[1])) {
+                            const marker = L.marker(coord).addTo(map);
+                            bounds.push(coord);
+
+                            // Etichetta sempre visibile
+                            marker.bindTooltip(riga.Titolo, { 
+                                permanent: true, 
+                                direction: 'top', 
+                                className: 'etichetta-nome', 
+                                offset: [0, -10] 
+                            });
+
+                            // Contenuto Popup
+                            const popupContent = `
+                                <div class="popup-container">
+                                    <strong>${riga.Titolo}</strong>
+                                    <p style="font-size:13px; margin: 10px 0;">${riga.Descrizione}</p>
+                                    <div style="display:flex; justify-content: space-between;">
+                                        <button class="btn-audio" onclick="parla('${riga.Descrizione.replace(/'/g, "\\'")}')">▶ ASCOLTA</button>
+                                        <button class="btn-stop-small" onclick="stopAudio()">■</button>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            marker.bindPopup(popupContent);
+                            marker.on('click', () => parla(riga.Descrizione));
+                        }
+                    }
+                });
+
+                // Zoom automatico per inquadrare tutti i punti caricati
+                if (bounds.length > 0)
