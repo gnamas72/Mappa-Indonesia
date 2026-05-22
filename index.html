@@ -31,37 +31,61 @@
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      function parla(testo) {
-            window.speechSynthesis.cancel(); // Ferma eventuali letture precedenti
-            
-            const messaggio = new SpeechSynthesisUtterance(testo);
-            messaggio.lang = 'it-IT';
-            messaggio.rate = 1.05; // Velocità leggermente più naturale
-            messaggio.pitch = 1;
+        // Inizializzazione forzata dell'audio engine per smartphone al primo tocco sulla mappa
+        function sbloccaAudioMobile() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                // Riproduce un testo vuoto per attivare il canale audio dello smartphone
+                const u = new SpeechSynthesisUtterance('');
+                window.speechSynthesis.speak(u);
+            }
+            document.removeEventListener('click', sbloccaAudioMobile);
+            document.removeEventListener('touchstart', sbloccaAudioMobile);
+        }
+        document.addEventListener('click', sbloccaAudioMobile);
+        document.addEventListener('touchstart', sbloccaAudioMobile);
 
-            // Recuperiamo tutte le voci disponibili nel dispositivo
-            let voci = window.speechSynthesis.getVoices();
-
-            // Cerchiamo una voce italiana che sia fluida (Google, Microsoft o Premium)
-            // Diamo la precedenza a una voce maschile naturale se esiste
-            let voceSelezionata = voci.find(v => v.lang.includes('it') && v.name.includes('Google') && v.name.toLowerCase().includes('male')) || 
-                                 voci.find(v => v.lang.includes('it') && v.name.includes('Google')) ||
-                                 voci.find(v => v.lang.includes('it') && v.name.includes('Microsoft')) ||
-                                 voci.find(v => v.lang.includes('it'));
-
-            if (voceSelezionata) {
-                messaggio.voice = voceSelezionata;
+        function parla(testo) {
+            if (!('speechSynthesis' in window)) {
+                alert("Il tuo browser non supporta la sintesi vocale.");
+                return;
             }
 
-            window.speechSynthesis.speak(messaggio);
+            window.speechSynthesis.cancel(); // Ferma eventuali letture precedenti
+
+            // Introduciamo un micro-ritardo (timeout) richiesto dai sistemi mobile 
+            // per evitare che il .cancel() elimini anche il nuovo messaggio istantaneo
+            setTimeout(() => {
+                const messaggio = new SpeechSynthesisUtterance(testo);
+                messaggio.lang = 'it-IT';
+                messaggio.rate = 1.05; 
+                messaggio.pitch = 1;
+
+                let voci = window.speechSynthesis.getVoices();
+
+                // Selezione robusta della voce compatibile sia con Android che con iOS
+                let voceSelezionata = voci.find(v => v.lang.includes('it') && v.name.includes('Google') && v.name.toLowerCase().includes('male')) || 
+                                     voci.find(v => v.lang.includes('it') && v.name.includes('Google')) ||
+                                     voci.find(v => v.lang.includes('it') && v.name.includes('Microsoft')) ||
+                                     voci.find(v => v.lang.includes('it') && (v.name.includes('Alice') || v.name.includes('Luca'))) || // Voci native iOS
+                                     voci.find(v => v.lang.includes('it'));
+
+                if (voceSelezionata) {
+                    messaggio.voice = voceSelezionata;
+                }
+
+                window.speechSynthesis.speak(messaggio);
+            }, 50); 
         }
 
-        // Questo pezzetto serve a "svegliare" le voci sui browser come Chrome
+        // Sveglia le voci sui browser basati su Chromium/Android
         window.speechSynthesis.onvoiceschanged = () => {
             window.speechSynthesis.getVoices();
         };
 
-        function stopAudio() { window.speechSynthesis.cancel(); }
+        function stopAudio() { 
+            window.speechSynthesis.cancel(); 
+        }
 
         // Caricamento CSV
         Papa.parse('punti.csv', {
@@ -83,23 +107,26 @@
 
                             marker.bindTooltip(riga.Titolo, { permanent: true, direction: 'top', className: 'etichetta-nome', offset: [0, -10] });
 
+                            // Pulizia del testo per evitare rotture di sintassi HTML/JS nel popup
+                            const descrizionePulita = riga.Descrizione.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, " ");
+
                             const popupContent = `
-                               <div class="popup-container" style="max-width: 250px;">
-        <div style="display:flex; justify-content: space-between; margin-bottom: 10px; gap: 5px;">
-            <button class="btn-audio" style="width: 80%;" onclick="parla('${riga.Descrizione.replace(/'/g, "\\'").replace(/\n/g, " ")}')">
-                ▶ RIPRODUCI AUDIO
-            </button>
-            <button class="btn-stop-small" style="width: 20%;" onclick="stopAudio()">■</button>
-        </div>
-        
-        <strong style="font-size: 16px; display: block; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
-            ${riga.Titolo}
-        </strong>
-        
-        <div style="max-height: 150px; overflow-y: auto; margin-top: 10px; font-size: 13px; line-height: 1.4; padding-right: 5px;">
-            ${riga.Descrizione}
-        </div>
-    </div>`;
+                            <div class="popup-container" style="max-width: 250px;">
+                                <div style="display:flex; justify-content: space-between; margin-bottom: 10px; gap: 5px;">
+                                    <button class="btn-audio" style="width: 80%; padding: 8px;" onclick="parla('${descrizionePulita}')">
+                                        ▶ RIPRODUCI AUDIO
+                                    </button>
+                                    <button class="btn-stop-small" style="width: 20%;" onclick="stopAudio()">■</button>
+                                </div>
+                                
+                                <strong style="font-size: 16px; display: block; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                                    ${riga.Titolo}
+                                </strong>
+                                
+                                <div style="max-height: 150px; overflow-y: auto; margin-top: 10px; font-size: 13px; line-height: 1.4; padding-right: 5px;">
+                                    ${riga.Descrizione}
+                                </div>
+                            </div>`;
                             
                             marker.bindPopup(popupContent);
                         }
